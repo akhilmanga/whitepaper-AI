@@ -1,20 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { 
-  UserPlus, 
-  Mail, 
-  Lock, 
-  User,
-  Loader2,
-  ArrowRight,
-  Github,
-  Google,
-  Sparkles,
-  BookOpen,
-  Eye,
-  EyeOff
-} from 'lucide-react';
+import { UserPlus, Mail, Lock, User, Loader2, ArrowRight, Github, ToggleLeft as Google, Sparkles, BookOpen, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const SignupPage: React.FC = () => {
