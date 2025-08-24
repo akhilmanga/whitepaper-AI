@@ -107,12 +107,6 @@ const HomePage: React.FC = () => {
       description: 'Stay current with emerging technologies in your field',
       icon: TrendingUp,
       color: 'green'
-    },
-    {
-      name: 'Alex Chen',
-      role: 'Computer Science Graduate',
-      content: 'Whitepaper AI cut my research time in half. I can now understand complex blockchain papers in minutes instead of hours.',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=150&q=80'
     }
   ];
   

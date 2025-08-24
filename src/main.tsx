@@ -1,5 +1,6 @@
 import { StrictMode, ErrorInfo, ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
+import React from 'react';
 import App from './App.tsx';
 import './index.css';
 import { Toaster } from 'react-hot-toast';
