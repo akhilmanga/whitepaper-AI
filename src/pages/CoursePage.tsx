@@ -698,4 +698,3 @@ const Presentation = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export default CoursePage;
-```
