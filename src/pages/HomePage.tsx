@@ -377,7 +377,7 @@ const HomePage: React.FC = () => {
                   <div className={`p-8 rounded-2xl bg-gradient-to-br ${features[currentFeatureIndex].gradient} text-white`}>
                     <div className="flex items-center mb-6">
                       <div className="w-12 h-12 rounded-xl bg-white bg-opacity-20 backdrop-blur-sm flex items-center justify-center mr-4">
-                        <features[currentFeatureIndex].icon className="h-6 w-6 text-white" />
+                        {React.createElement(features[currentFeatureIndex].icon, { className: "h-6 w-6 text-white" })}
                       </div>
                       <h3 className="text-2xl font-bold">{features[currentFeatureIndex].title}</h3>
                     </div>
