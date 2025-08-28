@@ -112,99 +112,105 @@ const FlashCardComponent: React.FC<FlashCardComponentProps> = ({
   const renderCardContent = (card: FlashCard) => {
     // Process content for LaTeX and code formatting
     const processContent = (content: string) => {
-      // Handle LaTeX
-      let processed = content.replace(/\$([^\$]+)\$/g, (match, p1) => `\\(${p1}\\)`);
-      
       // Handle code blocks
-      processed = processed.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+      let processed = content.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
         return `<code class="language-${lang || 'text'}">${code.trim()}</code>`;
       });
       
       return processed;
     };
 
+    const renderMathContent = (content: string) => {
+      // Split content by inline math delimiters
+      const parts = content.split(/\$([^\$]+)\$/g);
+      return parts.map((part, index) => {
+        if (index % 2 === 1) {
+          // This is math content
+          return <InlineMath key={index} math={part} />;
+        } else {
+          // This is regular text
+          return <span key={index} dangerouslySetInnerHTML={{ __html: processContent(part) }} />;
+        }
+      });
+    };
     if (isFlipped) {
       return (
-        <MathJax.Provider>
-          <div className="h-full flex flex-col">
-            <div className="flex-1 flex items-center justify-center p-6">
-              <MathJax.Node formula={processContent(card.definition)} />
-            </div>
-            {card.context && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-semibold text-gray-700 mb-2">Context:</h4>
-                <p className="text-gray-600">{card.context}</p>
-              </div>
-            )}
-            {card.example && (
-              <div className="mt-2 p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-semibold text-gray-700 mb-2">Example:</h4>
-                <MathJax.Node formula={processContent(card.example)} />
-              </div>
-            )}
+        <div className="h-full flex flex-col">
+          <div className="flex-1 flex items-center justify-center p-6">
+            <div>{renderMathContent(card.definition)}</div>
           </div>
-        </MathJax.Provider>
+          {card.context && (
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+              <h4 className="font-semibold text-gray-700 mb-2">Context:</h4>
+              <p className="text-gray-600">{card.context}</p>
+            </div>
+          )}
+          {card.example && (
+            <div className="mt-2 p-4 bg-gray-50 rounded-lg">
+              <h4 className="font-semibold text-gray-700 mb-2">Example:</h4>
+              <div>{renderMathContent(card.example)}</div>
+            </div>
+          )}
+        </div>
       );
     }
     
     return (
-      <MathJax.Provider>
-        <div className="h-full flex flex-col">
-          <div className="flex-1 flex items-center justify-center p-6">
-            <MathJax.Node formula={processContent(card.term)} />
+      <div className="h-full flex flex-col">
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div>{renderMathContent(card.term)}</div>
+        </div>
+        <div className="mt-auto flex justify-between items-center px-6 py-4 border-t border-gray-200">
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium text-gray-500">Category:</span>
+            {card.category === 'math' && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                <BookOpen className="w-3 h-3 mr-1" />
+                Math
+              </span>
+            )}
+            {card.category === 'code' && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                <></>
+                Code
+              </span>
+            )}
+            {card.category === 'concept' && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <Target className="w-3 h-3 mr-1" />
+                Concept
+              </span>
+            )}
+            {card.category === 'terminology' && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                <Sparkles className="w-3 h-3 mr-1" />
+                Terminology
+              </span>
+            )}
           </div>
-          <div className="mt-auto flex justify-between items-center px-6 py-4 border-t border-gray-200">
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium text-gray-500">Category:</span>
-              {card.category === 'math' && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                  <BookOpen className="w-3 h-3 mr-1" />
-                  Math
-                </span>
-              )}
-              {card.category === 'code' && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  <></>
-                  Code
-                </span>
-              )}
-              {card.category === 'concept' && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  <Target className="w-3 h-3 mr-1" />
-                  Concept
-                </span>
-              )}
-              {card.category === 'terminology' && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                  <Sparkles className="w-3 h-3 mr-1" />
-                  Terminology
-                </span>
-              )}
-            </div>
-            <div className="flex items-center space-x-1">
-              <span className="text-sm font-medium text-gray-500">Difficulty:</span>
-              {card.difficulty === 'easy' && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  <Flame className="w-3 h-3 mr-1 text-green-500" fill="currentColor" />
-                  Easy
-                </span>
-              )}
-              {card.difficulty === 'medium' && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                  <Flame className="w-3 h-3 mr-1 text-yellow-500" fill="currentColor" />
-                  Medium
-                </span>
-              )}
-              {card.difficulty === 'hard' && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                  <Flame className="w-3 h-3 mr-1 text-red-500" fill="currentColor" />
-                  Hard
-                </span>
-              )}
-            </div>
+          <div className="flex items-center space-x-1">
+            <span className="text-sm font-medium text-gray-500">Difficulty:</span>
+            {card.difficulty === 'easy' && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <Flame className="w-3 h-3 mr-1 text-green-500" fill="currentColor" />
+                Easy
+              </span>
+            )}
+            {card.difficulty === 'medium' && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                <Flame className="w-3 h-3 mr-1 text-yellow-500" fill="currentColor" />
+                Medium
+              </span>
+            )}
+            {card.difficulty === 'hard' && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                <Flame className="w-3 h-3 mr-1 text-red-500" fill="currentColor" />
+                Hard
+              </span>
+            )}
           </div>
         </div>
-      </MathJax.Provider>
+      </div>
     );
   };
 

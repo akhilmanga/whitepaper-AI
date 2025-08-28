@@ -23,7 +23,8 @@ import {
   Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import MathJax from 'react-mathjax';
+import { InlineMath, BlockMath } from 'react-katex';
+import 'katex/dist/katex.min.css';
 
 type UploadMethod = 'file' | 'url' | 'text';
 
@@ -509,11 +510,9 @@ const UploadPage: React.FC = () => {
             </div>
             
             <div className="p-6 max-h-[60vh] overflow-y-auto">
-              <MathJax.Provider>
-                <div className="prose dark:prose-invert max-w-none">
-                  <MathJax.Node formula={previewContent} />
-                </div>
-              </MathJax.Provider>
+              <div className="prose dark:prose-invert max-w-none">
+                <div dangerouslySetInnerHTML={{ __html: previewContent }} />
+              </div>
             </div>
             
             <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700 flex justify-end">

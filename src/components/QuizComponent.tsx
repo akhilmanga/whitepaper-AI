@@ -17,7 +17,8 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import MathJax from 'react-mathjax';
+import { InlineMath, BlockMath } from 'react-katex';
+import 'katex/dist/katex.min.css';
 
 interface QuizComponentProps {
   questions: QuizQuestion[];
@@ -253,22 +254,29 @@ const QuizComponent: React.FC<QuizComponentProps> = ({
   const renderQuestionContent = (content: string) => {
     // Process content for LaTeX and code formatting
     const processContent = (text: string) => {
-      // Handle LaTeX
-      let processed = text.replace(/\$([^\$]+)\$/g, (match, p1) => `\\(${p1}\\)`);
-      
       // Handle code blocks
-      processed = processed.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+      let processed = text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
         return `<code class="language-${lang || 'text'}">${code.trim()}</code>`;
       });
       
       return processed;
     };
 
-    return (
-      <MathJax.Provider>
-        <MathJax.Node formula={processContent(content)} />
-      </MathJax.Provider>
-    );
+    const renderMathContent = (text: string) => {
+      // Split content by inline math delimiters
+      const parts = text.split(/\$([^\$]+)\$/g);
+      return parts.map((part, index) => {
+        if (index % 2 === 1) {
+          // This is math content
+          return <InlineMath key={index} math={part} />;
+        } else {
+          // This is regular text
+          return <span key={index} dangerouslySetInnerHTML={{ __html: processContent(part) }} />;
+        }
+      });
+    };
+
+    return <div>{renderMathContent(content)}</div>;
   };
   
   const renderQuestion = () => {
@@ -449,9 +457,9 @@ const QuizComponent: React.FC<QuizComponentProps> = ({
                   <BookOpen className="h-4 w-4 mr-2 text-blue-600" />
                   Explanation
                 </h5>
-                <p className="text-gray-700 leading-relaxed">
+                <div className="text-gray-700 leading-relaxed">
                   {renderQuestionContent(currentQuestion.explanation)}
-                </p>
+                </div>
               </div>
             </motion.div>
           )}
