@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useCourse, FlashCard, CourseModule } from '../context/CourseContext';
 import { RotateCcw, ChevronLeft, ChevronRight, Star, Brain, Target, Sparkles, BookOpen, Flame } from 'lucide-react';
-import MathJax from 'react-mathjax';
+import { InlineMath, BlockMath } from 'react-katex';
+import 'katex/dist/katex.min.css';
 
 interface FlashCardComponentProps {
   cards: FlashCard[];
