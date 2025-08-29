@@ -100,23 +100,6 @@ const initDarkMode = () => {
   }
 };
 
-// Initialize font loading
-const loadFonts = async () => {
-  try {
-    const font = new FontFace(
-      'Inter',
-      'url(https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap)'
-    );
-    
-    await font.load();
-    document.fonts.add(font);
-    document.body.classList.add('font-loaded');
-  } catch (e) {
-    console.error('Failed to load fonts:', e);
-    document.body.classList.add('font-failed');
-  }
-};
-
 // Initialize service worker for PWA features
 const registerServiceWorker = () => {
   if ('serviceWorker' in navigator && import.meta.env.PROD) {
@@ -136,9 +119,6 @@ const registerServiceWorker = () => {
 const initializeApp = async () => {
   // Initialize dark mode
   initDarkMode();
-  
-  // Load fonts
-  await loadFonts();
   
   // Register service worker
   registerServiceWorker();

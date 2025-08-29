@@ -154,11 +154,11 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <CourseProvider>
-          <ProgressProvider>
+        <ProgressProvider>
+          <CourseProvider>
             <AppRoutes />
-          </ProgressProvider>
-        </CourseProvider>
+          </CourseProvider>
+        </ProgressProvider>
       </AuthProvider>
     </Router>
   );
