@@ -76,7 +76,8 @@ export interface Course {
 }
 
 export interface ProcessedCourse extends Course {
-  // Additional properties for processed courses
+  lastSynced?: string;
+  isSynced?: boolean;
 }
 
 export interface KnowledgeGap {

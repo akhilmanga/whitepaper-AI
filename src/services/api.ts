@@ -1,14 +1,13 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelTokenSource } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, CancelTokenSource } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
-import { useAuth } from '../context/AuthContext';
-import { 
+// import { useAuth } from '../context/AuthContext';
+import {
   ProcessedCourse,
   FlashCard,
   QuizQuestion,
-  Module,
-  Course,
+
   KnowledgeGap,
-  LearningAnalytics,
+
   CourseRecommendation
 } from '../types/course';
 import { ProgressStats } from '../context/ProgressContext';
@@ -38,14 +37,14 @@ export class ApiError extends Error {
   code: ApiErrorCode;
   statusCode?: number;
   retryAfter?: number;
-  details?: any;
-  
+  details?: unknown;
+
   constructor(
-    message: string, 
-    code: ApiErrorCode, 
+    message: string,
+    code: ApiErrorCode,
     statusCode?: number,
     retryAfter?: number,
-    details?: any
+    details?: unknown
   ) {
     super(message);
     this.name = 'ApiError';
@@ -53,7 +52,7 @@ export class ApiError extends Error {
     this.statusCode = statusCode;
     this.retryAfter = retryAfter;
     this.details = details;
-    
+
     // Maintain proper stack trace
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, ApiError);
@@ -88,7 +87,7 @@ interface OfflineRequest {
   id: string;
   config: AxiosRequestConfig;
   resolve: (value: unknown) => void;
-  reject: (reason?: any) => void;
+  reject: (reason?: unknown) => void;
   timestamp: number;
   retryCount: number;
 }
@@ -113,7 +112,7 @@ export interface ServerStatus {
 }
 
 // Enhanced API response interface
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   data: T;
   status: number;
   statusText: string;
@@ -168,11 +167,11 @@ export interface ApiServiceStats {
 
 // API client interface
 export interface ApiClient {
-  get<T = any>(url: string, options?: ApiRequestOptions): Promise<ApiResponse<T>>;
-  post<T = any>(url: string, data?: any, options?: ApiRequestOptions): Promise<ApiResponse<T>>;
-  put<T = any>(url: string, data?: any, options?: ApiRequestOptions): Promise<ApiResponse<T>>;
-  patch<T = any>(url: string, data?: any, options?: ApiRequestOptions): Promise<ApiResponse<T>>;
-  delete<T = any>(url: string, options?: ApiRequestOptions): Promise<ApiResponse<T>>;
+  get<T = unknown>(url: string, options?: ApiRequestOptions): Promise<ApiResponse<T>>;
+  post<T = unknown>(url: string, data?: unknown, options?: ApiRequestOptions): Promise<ApiResponse<T>>;
+  put<T = unknown>(url: string, data?: unknown, options?: ApiRequestOptions): Promise<ApiResponse<T>>;
+  patch<T = unknown>(url: string, data?: unknown, options?: ApiRequestOptions): Promise<ApiResponse<T>>;
+  delete<T = unknown>(url: string, options?: ApiRequestOptions): Promise<ApiResponse<T>>;
 }
 
 // Document processing response
@@ -279,13 +278,13 @@ class ApiAnalyticsTracker {
     avgResponseTime: 0,
     requestHistory: []
   };
-  
+
   trackRequest(metadata: Omit<RequestMetadata, 'id' | 'startTime'> & { startTime?: number }) {
     const id = uuidv4();
     const startTime = metadata.startTime || Date.now();
-    
+
     this.stats.totalRequests++;
-    
+
     const requestMetadata: RequestMetadata = {
       id,
       startTime,
@@ -293,42 +292,42 @@ class ApiAnalyticsTracker {
       url: metadata.url,
       success: metadata.success
     };
-    
+
     if (metadata.endTime) {
       requestMetadata.endTime = metadata.endTime;
       requestMetadata.duration = metadata.endTime - startTime;
     }
-    
+
     if (metadata.statusCode) {
       requestMetadata.statusCode = metadata.statusCode;
     }
-    
+
     if (metadata.error) {
       requestMetadata.error = metadata.error;
       this.stats.failedRequests++;
     } else {
       this.stats.successfulRequests++;
     }
-    
+
     this.stats.requestHistory.push(requestMetadata);
-    
+
     // Keep history size manageable
     if (this.stats.requestHistory.length > 1000) {
       this.stats.requestHistory.shift();
     }
-    
+
     // Update average response time
     const totalTime = this.stats.requestHistory
       .filter(r => r.duration !== undefined)
       .reduce((sum, r) => sum + (r.duration || 0), 0);
-      
-    this.stats.avgResponseTime = this.stats.requestHistory.length > 0 
-      ? totalTime / this.stats.requestHistory.length 
+
+    this.stats.avgResponseTime = this.stats.requestHistory.length > 0
+      ? totalTime / this.stats.requestHistory.length
       : 0;
-    
+
     return id;
   }
-  
+
   getStats() {
     return { ...this.stats };
   }
@@ -339,12 +338,12 @@ class OfflineRequestQueue {
   private queue: OfflineRequest[] = [];
   private isProcessing = false;
   private offlineCheckInterval: NodeJS.Timeout | null = null;
-  
+
   constructor(
     private api: AxiosInstance,
     private onQueueEmpty?: () => void
-  ) {}
-  
+  ) { }
+
   enqueue(request: Omit<OfflineRequest, 'id' | 'timestamp' | 'retryCount'>) {
     if (this.queue.length >= MAX_OFFLINE_QUEUE_SIZE) {
       throw new ApiError(
@@ -352,7 +351,7 @@ class OfflineRequestQueue {
         ApiErrorCode.OFFLINE
       );
     }
-    
+
     const offlineRequest: OfflineRequest = {
       id: uuidv4(),
       config: request.config,
@@ -361,46 +360,46 @@ class OfflineRequestQueue {
       timestamp: Date.now(),
       retryCount: 0
     };
-    
+
     this.queue.push(offlineRequest);
-    
+
     if (!this.isProcessing) {
       this.processQueue();
     }
-    
+
     if (!this.offlineCheckInterval) {
       this.startOfflineCheck();
     }
-    
+
     return offlineRequest.id;
   }
-  
+
   private async processQueue() {
     if (this.isProcessing || this.queue.length === 0) return;
-    
+
     this.isProcessing = true;
-    
+
     try {
       while (this.queue.length > 0) {
         const request = this.queue[0];
-        
+
         try {
           // Check if we're online
           if (!navigator.onLine) {
             break;
           }
-          
+
           // Make the request
           const response = await this.api.request(request.config);
           request.resolve(response);
-          
+
           // Remove from queue
           this.queue.shift();
-        } catch (error: any) {
+        } catch (error: unknown) {
           if (request.retryCount < MAX_RETRIES) {
             request.retryCount++;
             // Exponential backoff
-            await new Promise(resolve => 
+            await new Promise(resolve =>
               setTimeout(resolve, RETRY_DELAY * Math.pow(2, request.retryCount))
             );
           } else {
@@ -411,13 +410,13 @@ class OfflineRequestQueue {
       }
     } finally {
       this.isProcessing = false;
-      
+
       if (this.queue.length === 0 && this.onQueueEmpty) {
         this.onQueueEmpty();
       }
     }
   }
-  
+
   private startOfflineCheck() {
     this.offlineCheckInterval = setInterval(() => {
       if (navigator.onLine && this.queue.length > 0 && !this.isProcessing) {
@@ -425,13 +424,13 @@ class OfflineRequestQueue {
       }
     }, OFFLINE_CHECK_INTERVAL);
   }
-  
+
   clear() {
     if (this.offlineCheckInterval) {
       clearInterval(this.offlineCheckInterval);
       this.offlineCheckInterval = null;
     }
-    
+
     // Reject all queued requests
     this.queue.forEach(request => {
       request.reject(new ApiError(
@@ -439,10 +438,10 @@ class OfflineRequestQueue {
         ApiErrorCode.OFFLINE
       ));
     });
-    
+
     this.queue = [];
   }
-  
+
   getQueueSize() {
     return this.queue.length;
   }
@@ -460,7 +459,7 @@ class ApiService implements ApiClient {
   private rateLimitReset: number | null = null;
   private requestCount = 0;
   private lastRequestTime = 0;
-  
+
   constructor(config?: ApiServiceConfig) {
     this.config = {
       baseUrl: API_BASE_URL,
@@ -471,7 +470,7 @@ class ApiService implements ApiClient {
       enableOfflineQueue: true,
       ...config
     };
-    
+
     this.axiosInstance = axios.create({
       baseURL: this.config.baseUrl,
       timeout: this.config.timeout,
@@ -481,22 +480,22 @@ class ApiService implements ApiClient {
         'X-Client-Version': import.meta.env.VITE_APP_VERSION || '1.0.0'
       }
     });
-    
+
     // Request interceptor
     this.axiosInstance.interceptors.request.use(
       config => {
         const requestId = uuidv4();
         config.headers['X-Request-ID'] = requestId;
-        
+
         // Add auth token if available
         const token = localStorage.getItem('whitepaperAI_token');
         if (token) {
           config.headers['Authorization'] = `Bearer ${token}`;
         }
-        
+
         // Track request start time
         config.metadata = { startTime: Date.now() };
-        
+
         // Rate limiting
         const now = Date.now();
         if (this.rateLimitReset && now < this.rateLimitReset) {
@@ -507,21 +506,21 @@ class ApiService implements ApiClient {
             this.rateLimitReset - now
           );
         }
-        
+
         return config;
       },
       error => {
         return Promise.reject(error);
       }
     );
-    
+
     // Response interceptor
     this.axiosInstance.interceptors.response.use(
       response => {
         // Track response time
         const endTime = Date.now();
         const duration = endTime - (response.config.metadata?.startTime || endTime);
-        
+
         // Update analytics
         if (this.config.enableAnalytics) {
           this.analyticsTracker.trackRequest({
@@ -533,17 +532,17 @@ class ApiService implements ApiClient {
             duration
           });
         }
-        
+
         // Update rate limit info
         const rateLimitReset = response.headers['x-ratelimit-reset'];
         if (rateLimitReset) {
           this.rateLimitReset = parseInt(rateLimitReset) * 1000;
         }
-        
+
         // Add request ID to response
         response.data.requestId = response.headers['x-request-id'] || uuidv4();
         response.data.requestTime = duration;
-        
+
         return response;
       },
       async error => {
@@ -551,7 +550,7 @@ class ApiService implements ApiClient {
         const startTime = config?.metadata?.startTime || Date.now();
         const endTime = Date.now();
         const duration = endTime - startTime;
-        
+
         // Update analytics
         if (this.config.enableAnalytics) {
           this.analyticsTracker.trackRequest({
@@ -564,30 +563,30 @@ class ApiService implements ApiClient {
             error: error.message
           });
         }
-        
+
         // Handle rate limiting
         if (error.response?.status === 429) {
           const reset = error.response.headers['x-ratelimit-reset'];
           this.rateLimitReset = reset ? parseInt(reset) * 1000 : Date.now() + RATE_LIMIT_RESET_THRESHOLD;
-          
+
           if (config && !config._retry && this.config.maxRetries > 0) {
             config._retry = true;
             config.retryCount = (config.retryCount || 0) + 1;
-            
+
             // Exponential backoff
             const delay = this.config.retryDelay * Math.pow(2, config.retryCount - 1);
             await new Promise(resolve => setTimeout(resolve, delay));
-            
+
             return this.axiosInstance(config);
           }
         }
-        
+
         // Handle auth errors
         if (error.response?.status === 401) {
           localStorage.removeItem('whitepaperAI_token');
           window.dispatchEvent(new Event('auth:expired'));
         }
-        
+
         // Handle network errors
         if (!navigator.onLine) {
           return new Promise((resolve, reject) => {
@@ -605,11 +604,11 @@ class ApiService implements ApiClient {
             }
           });
         }
-        
+
         // Create custom API error
         let apiError;
         const status = error.response?.status;
-        
+
         if (status) {
           switch (status) {
             case 400:
@@ -648,46 +647,46 @@ class ApiService implements ApiClient {
             ApiErrorCode.NETWORK_ERROR
           );
         }
-        
+
         return Promise.reject(apiError);
       }
     );
-    
+
     // Initialize offline queue
     this.offlineQueue = new OfflineRequestQueue(this.axiosInstance, () => {
       console.log('Offline request queue processed');
     });
-    
+
     // Start periodic server status checks
     this.startStatusChecks();
   }
-  
+
   private startStatusChecks() {
     this.checkServerStatus().catch(console.error);
-    
+
     if (this.statusCheckInterval) {
       clearInterval(this.statusCheckInterval);
     }
-    
+
     this.statusCheckInterval = setInterval(() => {
       this.checkServerStatus().catch(console.error);
     }, 30000); // Check every 30 seconds
   }
-  
+
   private async checkServerStatus(): Promise<ServerStatus> {
     const now = Date.now();
-    
+
     // Don't check too frequently
     if (this.lastStatusCheck && now - this.lastStatusCheck < 5000) {
       return this.serverStatus as ServerStatus;
     }
-    
+
     try {
       this.lastStatusCheck = now;
       const response = await this.axiosInstance.get<ServerStatus>('/health');
       this.serverStatus = response.data;
       return response.data;
-    } catch (error) {
+    } catch {
       this.serverStatus = {
         status: 'error',
         timestamp: new Date().toISOString(),
@@ -708,31 +707,31 @@ class ApiService implements ApiClient {
       return this.serverStatus;
     }
   }
-  
-  public async get<T = any>(url: string, options?: ApiRequestOptions): Promise<ApiResponse<T>> {
+
+  public async get<T = unknown>(url: string, options?: ApiRequestOptions): Promise<ApiResponse<T>> {
     return this.request<T>('get', url, undefined, options);
   }
-  
-  public async post<T = any>(url: string, data?: any, options?: ApiRequestOptions): Promise<ApiResponse<T>> {
+
+  public async post<T = unknown>(url: string, data?: unknown, options?: ApiRequestOptions): Promise<ApiResponse<T>> {
     return this.request<T>('post', url, data, options);
   }
-  
-  public async put<T = any>(url: string, data?: any, options?: ApiRequestOptions): Promise<ApiResponse<T>> {
+
+  public async put<T = unknown>(url: string, data?: unknown, options?: ApiRequestOptions): Promise<ApiResponse<T>> {
     return this.request<T>('put', url, data, options);
   }
-  
-  public async patch<T = any>(url: string, data?: any, options?: ApiRequestOptions): Promise<ApiResponse<T>> {
+
+  public async patch<T = unknown>(url: string, data?: unknown, options?: ApiRequestOptions): Promise<ApiResponse<T>> {
     return this.request<T>('patch', url, data, options);
   }
-  
-  public async delete<T = any>(url: string, options?: ApiRequestOptions): Promise<ApiResponse<T>> {
+
+  public async delete<T = unknown>(url: string, options?: ApiRequestOptions): Promise<ApiResponse<T>> {
     return this.request<T>('delete', url, undefined, options);
   }
-  
-  private async request<T = any>(
+
+  private async request<T = unknown>(
     method: 'get' | 'post' | 'put' | 'patch' | 'delete',
     url: string,
-    data?: any,
+    data?: unknown,
     options?: ApiRequestOptions
   ): Promise<ApiResponse<T>> {
     try {
@@ -744,7 +743,7 @@ class ApiService implements ApiClient {
         cancelToken: options?.cancelToken?.token,
         timeout: options?.timeout || this.config.timeout
       };
-      
+
       const response = await this.axiosInstance.request<T>(config);
       return {
         ...response,
@@ -758,11 +757,11 @@ class ApiService implements ApiClient {
       throw error;
     }
   }
-  
+
   public async processFile(file: File): Promise<ProcessedCourse> {
     const formData = new FormData();
     formData.append('file', file);
-    
+
     try {
       const response = await this.post<DocumentProcessingResponse>('/process-document', formData, {
         headers: {
@@ -770,7 +769,7 @@ class ApiService implements ApiClient {
         },
         timeout: 600000 // 10 minutes for large files
       });
-      
+
       return response.data.course;
     } catch (error) {
       if (error instanceof ApiError && error.code === ApiErrorCode.PROCESSING_ERROR) {
@@ -785,7 +784,7 @@ class ApiService implements ApiClient {
       );
     }
   }
-  
+
   public async processURL(url: string): Promise<ProcessedCourse> {
     try {
       const response = await this.post<DocumentProcessingResponse>('/process-url', { url });
@@ -800,7 +799,7 @@ class ApiService implements ApiClient {
       );
     }
   }
-  
+
   public async processText(text: string): Promise<ProcessedCourse> {
     if (!text || text.length < 100) {
       throw new ApiError(
@@ -809,7 +808,7 @@ class ApiService implements ApiClient {
         400
       );
     }
-    
+
     try {
       const response = await this.post<DocumentProcessingResponse>('/process-text', { text });
       return response.data.course;
@@ -823,11 +822,11 @@ class ApiService implements ApiClient {
       );
     }
   }
-  
+
   public async healthCheck(): Promise<ServerStatus> {
     return this.checkServerStatus();
   }
-  
+
   public async getCourses(): Promise<ProcessedCourse[]> {
     try {
       const response = await this.get<ProcessedCourse[]>('/courses');
@@ -842,7 +841,7 @@ class ApiService implements ApiClient {
       );
     }
   }
-  
+
   public async addCourse(course: ProcessedCourse): Promise<ProcessedCourse> {
     try {
       const response = await this.post<ProcessedCourse>('/courses', course);
@@ -857,9 +856,9 @@ class ApiService implements ApiClient {
       );
     }
   }
-  
+
   public async updateCourse(
-    courseId: string, 
+    courseId: string,
     updates: Partial<Omit<ProcessedCourse, 'id' | 'modules'>>
   ): Promise<ProcessedCourse> {
     try {
@@ -875,7 +874,7 @@ class ApiService implements ApiClient {
       );
     }
   }
-  
+
   public async deleteCourse(courseId: string): Promise<void> {
     try {
       await this.delete(`/courses/${courseId}`);
@@ -889,7 +888,7 @@ class ApiService implements ApiClient {
       );
     }
   }
-  
+
   public async updateFlashCardMastery(
     courseId: string,
     moduleId: string,
@@ -912,7 +911,7 @@ class ApiService implements ApiClient {
       );
     }
   }
-  
+
   public async updateQuizAnswer(
     courseId: string,
     moduleId: string,
@@ -936,7 +935,7 @@ class ApiService implements ApiClient {
       );
     }
   }
-  
+
   public async getCourseAnalytics(courseId: string): Promise<CourseAnalyticsResponse> {
     try {
       const response = await this.get<CourseAnalyticsResponse>(`/courses/${courseId}/analytics`);
@@ -951,7 +950,7 @@ class ApiService implements ApiClient {
       );
     }
   }
-  
+
   public async exportCourse(
     courseId: string,
     format: 'pdf' | 'notion' | 'slides' | 'markdown'
@@ -971,7 +970,7 @@ class ApiService implements ApiClient {
       );
     }
   }
-  
+
   public async shareCourse(
     courseId: string,
     options: CourseSharingOptions
@@ -992,7 +991,7 @@ class ApiService implements ApiClient {
       );
     }
   }
-  
+
   public async getCurrentUser(): Promise<UserProfile> {
     try {
       const response = await this.get<UserProfile>('/users/me');
@@ -1007,7 +1006,7 @@ class ApiService implements ApiClient {
       );
     }
   }
-  
+
   public async updateUserPreferences(
     preferences: Partial<UserProfile['preferences']>
   ): Promise<UserProfile> {
@@ -1024,7 +1023,7 @@ class ApiService implements ApiClient {
       );
     }
   }
-  
+
   public async login(email: string, password: string): Promise<{ token: string; user: UserProfile }> {
     try {
       const response = await this.post<{ token: string; user: UserProfile }>('/auth/login', {
@@ -1042,10 +1041,10 @@ class ApiService implements ApiClient {
       );
     }
   }
-  
+
   public async signup(
-    name: string, 
-    email: string, 
+    name: string,
+    email: string,
     password: string
   ): Promise<{ token: string; user: UserProfile }> {
     try {
@@ -1065,37 +1064,37 @@ class ApiService implements ApiClient {
       );
     }
   }
-  
+
   public async logout(): Promise<void> {
     try {
       await this.post('/auth/logout', {});
-    } catch (error) {
+    } catch {
       // Ignore logout errors
     } finally {
       localStorage.removeItem('whitepaperAI_token');
     }
   }
-  
+
   public getAnalyticsStats(): ApiAnalytics {
     return this.analyticsTracker.getStats();
   }
-  
+
   public getServerStatus(): ServerStatus | null {
     return this.serverStatus;
   }
-  
+
   public getOfflineQueueSize(): number {
     return this.offlineQueue.getQueueSize();
   }
-  
+
   public clearOfflineQueue(): void {
     this.offlineQueue.clear();
   }
-  
+
   public getApiStats(): ApiServiceStats {
     const analytics = this.analyticsTracker.getStats();
     const requestHistory = analytics.requestHistory;
-    
+
     // Calculate stats by endpoint
     const byEndpoint: Record<string, { success: number; failed: number }> = {};
     requestHistory.forEach(req => {
@@ -1108,30 +1107,30 @@ class ApiService implements ApiClient {
         byEndpoint[req.url].failed++;
       }
     });
-    
+
     // Find slowest and fastest endpoints
     let slowestEndpoint = '';
     let fastestEndpoint = '';
     let slowestTime = 0;
     let fastestTime = Infinity;
-    
-    Object.entries(byEndpoint).forEach(([url, stats]) => {
+
+    Object.entries(byEndpoint).forEach(([url]) => {
       const avgTime = requestHistory
         .filter(r => r.url === url && r.duration !== undefined)
-        .reduce((sum, r) => sum + (r.duration || 0), 0) / 
+        .reduce((sum, r) => sum + (r.duration || 0), 0) /
         requestHistory.filter(r => r.url === url).length;
-      
+
       if (avgTime > slowestTime) {
         slowestTime = avgTime;
         slowestEndpoint = url;
       }
-      
+
       if (avgTime < fastestTime) {
         fastestTime = avgTime;
         fastestEndpoint = url;
       }
     });
-    
+
     // Error stats
     const errorTypes: Record<ApiErrorCode, number> = {
       [ApiErrorCode.NETWORK_ERROR]: 0,
@@ -1142,7 +1141,7 @@ class ApiService implements ApiClient {
       [ApiErrorCode.PROCESSING_ERROR]: 0,
       [ApiErrorCode.OFFLINE]: 0
     };
-    
+
     const recentErrors = requestHistory
       .filter(r => !r.success)
       .slice(-10)
@@ -1150,7 +1149,7 @@ class ApiService implements ApiClient {
         timestamp: new Date(r.startTime).toISOString(),
         error: new ApiError(
           r.error || 'Unknown error',
-          r.statusCode === 401 || r.statusCode === 403 
+          r.statusCode === 401 || r.statusCode === 403
             ? ApiErrorCode.AUTH_ERROR
             : r.statusCode === 429
               ? ApiErrorCode.RATE_LIMITED
@@ -1161,12 +1160,12 @@ class ApiService implements ApiClient {
         ),
         endpoint: r.url
       }));
-    
+
     // Count error types
     recentErrors.forEach(err => {
       errorTypes[err.error.code]++;
     });
-    
+
     return {
       requests: {
         total: analytics.totalRequests,

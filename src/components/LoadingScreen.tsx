@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, Brain, Target, Sparkles, Zap, ChevronRight } from 'lucide-react';
+import { BookOpen, Brain, Target, Sparkles, Zap } from 'lucide-react';
 import { useCourse } from '../context/CourseContext';
 
 const LoadingScreen: React.FC = () => {
@@ -26,10 +26,7 @@ const LoadingScreen: React.FC = () => {
   useEffect(() => {
     let mounted = true;
     let stepTimer: NodeJS.Timeout;
-    let progressInterval: NodeJS.Timeout;
-    
-    // Start progress animation
-    progressInterval = setInterval(() => {
+    const progressInterval: NodeJS.Timeout = setInterval(() => {
       setProgress(prev => {
         if (prev >= 95) {
           clearInterval(progressInterval);
@@ -38,6 +35,7 @@ const LoadingScreen: React.FC = () => {
         return Math.min(95, prev + Math.random() * 3);
       });
     }, 200);
+
     
     // Process loading steps
     const processSteps = async () => {

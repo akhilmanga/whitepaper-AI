@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useCourse, useProgress } from '../context/CourseContext';
+import { useCourse } from '../context/CourseContext';
 import { useProgress as useGlobalProgress } from '../context/ProgressContext';
 import ServerStatus from './ServerStatus';
 import { 
@@ -15,19 +15,15 @@ import {
   Bell,
   Settings,
   Sparkles,
-  Brain,
   Target,
-  ChevronRight,
-  ChevronLeft,
   Moon,
-  Sun,
   Menu,
   X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Navigation: React.FC = () => {
-  const { user, logout, loading: authLoading } = useAuth();
+  const { user, logout } = useAuth();
   const { courses } = useCourse();
   const { stats } = useGlobalProgress();
   const location = useLocation();

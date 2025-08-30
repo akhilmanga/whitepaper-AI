@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { useCourse } from '../context/CourseContext';
 import { 
@@ -10,19 +10,15 @@ import {
   Zap, 
   Award, 
   Star,
-  BarChart3,
-  Brain,
   ChevronDown,
   ChevronUp,
   ChevronRight,
   Download,
   Share2,
-  Users,
   Filter,
   Search,
   Sparkles,
-  BookOpen,
-  ChevronLeft
+  BookOpen
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { jsPDF } from 'jspdf';
@@ -59,7 +55,7 @@ const ProgressPage: React.FC = () => {
   
   // Get knowledge gaps
   const knowledgeGaps = Object.entries(stats.knowledgeMastery.byConcept)
-    .filter(([_, mastery]) => mastery < 60)
+    .filter(([, mastery]) => mastery < 60)
     .sort((a, b) => a[1] - b[1])
     .slice(0, 3);
   
@@ -118,7 +114,7 @@ const ProgressPage: React.FC = () => {
       session.quizScore ? `${session.quizScore}%` : 'N/A'
     ]);
     
-    (doc as any).autoTable({
+    (doc as typeof doc & { autoTable: (options: unknown) => void }).autoTable({
       head: [['Date', 'Duration', 'Modules', 'Flashcards', 'Quiz']],
       body: sessionData,
       startY: 88,

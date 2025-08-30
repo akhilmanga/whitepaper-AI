@@ -5,7 +5,7 @@ import { UserPlus, Mail, Lock, User, Loader2, ArrowRight, Github, ToggleLeft as 
 import { motion } from 'framer-motion';
 
 const SignupPage: React.FC = () => {
-  const { user, signup, loading: authLoading } = useAuth();
+  const { user, signup } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -73,7 +73,7 @@ const SignupPage: React.FC = () => {
     try {
       await signup(name, email, password);
       // The useAuth hook will handle the redirect
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to create account. Please try again.');
       setIsLoading(false);
       setAnimationKey(prev => prev + 1);
@@ -106,7 +106,7 @@ const SignupPage: React.FC = () => {
       localStorage.setItem('whitepaperAI_user', JSON.stringify(mockUser));
       
       navigate('/dashboard', { replace: true });
-    } catch (error) {
+    } catch {
       setError('Failed to sign up with ' + provider);
       setIsLoading(false);
     }

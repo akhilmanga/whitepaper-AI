@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useCourse, CourseModule, useProgress } from '../context/CourseContext';
+import { useCourse } from '../context/CourseContext';
 import { useProgress as useGlobalProgress } from '../context/ProgressContext';
 import { 
   BookOpen, 
@@ -9,7 +9,6 @@ import {
   CheckCircle, 
   Clock, 
   Target, 
-  BarChart3, 
   Sparkles,
   Share2,
   Download,
@@ -17,7 +16,6 @@ import {
   Flame,
   Star,
   Brain,
-  Trophy,
   AlertTriangle,
   RefreshCw
 } from 'lucide-react';
@@ -43,7 +41,7 @@ const CoursePage: React.FC = () => {
   const [showShareOptions, setShowShareOptions] = useState(false);
   const [showExportOptions, setShowExportOptions] = useState(false);
   const [showRecommendations, setShowRecommendations] = useState(false);
-  const [processingError, setProcessingError] = useState<string | null>(null);
+  // const [processingError, setProcessingError] = useState<string | null>(null);
   const [moduleRetryCount, setModuleRetryCount] = useState<{ [key: string]: number }>({});
   const sidebarRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);

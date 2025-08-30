@@ -8,8 +8,7 @@ import {
   Sparkles,
   CheckCircle,
   Upload,
-  BarChart3,
-  Users
+
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 

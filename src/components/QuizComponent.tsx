@@ -1,23 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useCourse, QuizQuestion, CourseModule } from '../context/CourseContext';
+import { useCourse, QuizQuestion } from '../context/CourseContext';
 import { 
   CheckCircle, 
   XCircle, 
-  ArrowRight, 
   RotateCcw, 
   Trophy,
-  Brain,
   Target,
-  BarChart3,
   Clock,
   AlertTriangle,
   Sparkles,
   BookOpen,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Brain
 } from 'lucide-react';
-import { InlineMath, BlockMath } from 'react-katex';
+import { InlineMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
 
 interface QuizComponentProps {
@@ -126,7 +124,7 @@ const QuizComponent: React.FC<QuizComponentProps> = ({
     if (!currentQuestion || isAnswered) return;
     
     const isCorrect = submittedAnswer === currentQuestion.correctAnswer;
-    const explanation = currentQuestion.explanation;
+    // const explanation = currentQuestion.explanation;
     
     // Update context
     updateQuizAnswer(
@@ -255,7 +253,7 @@ const QuizComponent: React.FC<QuizComponentProps> = ({
     // Process content for LaTeX and code formatting
     const processContent = (text: string) => {
       // Handle code blocks
-      let processed = text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+      const processed = text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
         return `<code class="language-${lang || 'text'}">${code.trim()}</code>`;
       });
       
@@ -264,7 +262,7 @@ const QuizComponent: React.FC<QuizComponentProps> = ({
 
     const renderMathContent = (text: string) => {
       // Split content by inline math delimiters
-      const parts = text.split(/\$([^\$]+)\$/g);
+      const parts = text.split(/\$([^$]+)\$/g);
       return parts.map((part, index) => {
         if (index % 2 === 1) {
           // This is math content
@@ -347,7 +345,7 @@ const QuizComponent: React.FC<QuizComponentProps> = ({
               {currentQuestion.options?.map((option, index) => {
                 const isSelected = selectedAnswer === option;
                 const isCorrect = option === currentQuestion.correctAnswer;
-                const isIncorrect = isAnswered && isSelected && !isCorrect;
+                // const isIncorrect = isAnswered && isSelected && !isCorrect;
                 
                 return (
                   <motion.button

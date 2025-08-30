@@ -5,7 +5,6 @@ import {
   Upload, 
   Link as LinkIcon, 
   Type, 
-  FileText, 
   Loader, 
   CheckCircle, 
   AlertTriangle,
@@ -16,14 +15,12 @@ import {
   ChevronUp,
   ChevronRight,
   X,
-  Plus,
   Globe,
   BookOpen,
-  Clock,
   Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { InlineMath, BlockMath } from 'react-katex';
+// import { InlineMath, BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
 
 type UploadMethod = 'file' | 'url' | 'text';
@@ -107,7 +104,7 @@ const UploadPage: React.FC = () => {
     try {
       new URL(url);
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   };
@@ -184,7 +181,7 @@ const UploadPage: React.FC = () => {
           setShowPreview(true);
         };
         reader.readAsText(file);
-      } catch (err) {
+      } catch {
         setError('Failed to preview file content');
       }
     } else if (activeMethod === 'url' && url) {
@@ -201,7 +198,7 @@ const UploadPage: React.FC = () => {
         const data = await response.json();
         setPreviewContent(data.content.substring(0, 500) + '...');
         setShowPreview(true);
-      } catch (err) {
+      } catch {
         setError('Failed to preview URL content');
       }
     } else if (activeMethod === 'text') {

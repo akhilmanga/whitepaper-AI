@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useCourse, FlashCard, CourseModule } from '../context/CourseContext';
-import { RotateCcw, ChevronLeft, ChevronRight, Star, Brain, Target, Sparkles, BookOpen, Flame } from 'lucide-react';
-import { InlineMath, BlockMath } from 'react-katex';
+import { useCourse, FlashCard } from '../context/CourseContext';
+import { RotateCcw, ChevronLeft, ChevronRight, Star, Target, Sparkles, BookOpen, Flame } from 'lucide-react';
+import { InlineMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
 
 interface FlashCardComponentProps {
   cards: FlashCard[];
-  courseId: string;
   moduleId: string;
   onCompletion?: () => void;
   mode?: 'study' | 'review'; // Study mode shows all cards, review mode shows due cards
@@ -15,7 +14,6 @@ interface FlashCardComponentProps {
 
 const FlashCardComponent: React.FC<FlashCardComponentProps> = ({
   cards,
-  courseId,
   moduleId,
   onCompletion,
   mode = 'study',
@@ -113,7 +111,7 @@ const FlashCardComponent: React.FC<FlashCardComponentProps> = ({
     // Process content for LaTeX and code formatting
     const processContent = (content: string) => {
       // Handle code blocks
-      let processed = content.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+      const processed = content.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
         return `<code class="language-${lang || 'text'}">${code.trim()}</code>`;
       });
       
@@ -122,7 +120,7 @@ const FlashCardComponent: React.FC<FlashCardComponentProps> = ({
 
     const renderMathContent = (content: string) => {
       // Split content by inline math delimiters
-      const parts = content.split(/\$([^\$]+)\$/g);
+      const parts = content.split(/\$([^$]+)\$/g);
       return parts.map((part, index) => {
         if (index % 2 === 1) {
           // This is math content

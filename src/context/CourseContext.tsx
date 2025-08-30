@@ -6,13 +6,12 @@ import React, {
   ReactNode,
   useCallback
 } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+// import { v4 as uuidv4 } from 'uuid';
 import { useProgress as useGlobalProgress } from './ProgressContext';
 import { 
   FlashCard,
   QuizQuestion,
-  Module,
-  Course,
+
   ProcessedCourse,
   FlashCardCategory,
   DifficultyLevel,
@@ -164,7 +163,7 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   });
   
   const [currentCourse, setCurrentCourse] = useState<ProcessedCourse | null>(null);
-  const [processingRetries, setProcessingRetries] = useState<{ [key: string]: number }>({});
+  // const [processingRetries, setProcessingRetries] = useState<{ [key: string]: number }>({});
 
   // Persist courses to localStorage
   useEffect(() => {
@@ -294,9 +293,9 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         if (module.id !== moduleId) return module;
         
         // Calculate overall course progress
-        const completedModules = course.modules.filter(m => m.completed).length;
-        const totalModules = course.modules.length;
-        const newProgress = Math.round(((completedModules + (completed ? 1 : 0)) / totalModules) * 100);
+        // const completedModules = course.modules.filter(m => m.completed).length;
+        // const totalModules = course.modules.length;
+        // const newProgress = Math.round(((completedModules + (completed ? 1 : 0)) / totalModules) * 100);
         
         return {
           ...module,

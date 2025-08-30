@@ -134,7 +134,7 @@ export const ProgressProvider: React.FC<{ children: ReactNode }> = ({ children }
         ? new Date(stats.streak.lastSession) 
         : null;
       
-      let newStreak = { ...stats.streak };
+      const newStreak = { ...stats.streak };
       
       if (lastSession) {
         const yesterday = new Date(now);
@@ -195,7 +195,7 @@ export const ProgressProvider: React.FC<{ children: ReactNode }> = ({ children }
     
     setStats(prev => {
       // Update time spent
-      const today = new Date().toISOString().split('T')[0];
+      // const today = new Date().toISOString().split('T')[0];
       const lastWeek = new Date();
       lastWeek.setDate(lastWeek.getDate() - 7);
       
@@ -226,7 +226,7 @@ export const ProgressProvider: React.FC<{ children: ReactNode }> = ({ children }
       };
       
       // Check for achievements
-      let newAchievements = [...prev.achievements];
+      const newAchievements = [...prev.achievements];
       
       // First course achievement
       if (session.modulesCompleted > 0 && newAchievements[0].progress === 0) {
@@ -417,7 +417,7 @@ export const ProgressProvider: React.FC<{ children: ReactNode }> = ({ children }
     
     // Practice quiz if knowledge gap detected
     const knowledgeGaps = Object.entries(stats.knowledgeMastery.byConcept)
-      .filter(([_, mastery]) => mastery < 60)
+      .filter(([, mastery]) => mastery < 60)
       .map(([concept]) => concept);
     
     if (knowledgeGaps.length > 0) {
@@ -450,7 +450,7 @@ export const ProgressProvider: React.FC<{ children: ReactNode }> = ({ children }
     };
     
     switch (format) {
-      case 'json':
+      case 'json': {
         const json = JSON.stringify(exportData, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -463,8 +463,9 @@ export const ProgressProvider: React.FC<{ children: ReactNode }> = ({ children }
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         break;
+      }
         
-      case 'csv':
+      case 'csv': {
         // Simplified CSV export
         let csv = 'Date,Duration (min),Course,Modules Completed,Flashcards Reviewed,Quiz Score\n';
         
@@ -483,11 +484,13 @@ export const ProgressProvider: React.FC<{ children: ReactNode }> = ({ children }
         document.body.removeChild(csvA);
         URL.revokeObjectURL(csvUrl);
         break;
+      }
         
-      case 'pdf':
+      case 'pdf': {
         // In a real app, this would use a library like jsPDF
         alert('PDF export would generate a professional progress report with charts and insights.');
         break;
+      }
     }
   };
   

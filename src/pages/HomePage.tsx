@@ -1,31 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   BookOpen, 
-  Zap, 
   Target, 
   TrendingUp, 
   ArrowRight, 
   Upload, 
-  Brain, 
   BarChart,
-  ChevronDown,
-  ChevronRight,
-  Users,
-  ShieldCheck,
   Sparkles,
-  Globe,
-  Clock,
-  ChevronLeft
+  Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LoadingScreen from '../components/LoadingScreen';
-import { useCourse } from '../context/CourseContext';
+// import { useCourse } from '../context/CourseContext';
 
 const HomePage: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
-  const { courses } = useCourse();
+  // const { courses } = useCourse();
   const navigate = useNavigate();
   const [showLoading, setShowLoading] = useState(false);
   const [currentFeatureIndex, setCurrentFeatureIndex] = useState(0);

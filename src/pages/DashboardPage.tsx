@@ -5,14 +5,11 @@ import { useProgress } from '../context/ProgressContext';
 import { 
   BookOpen, 
   Clock, 
-  TrendingUp, 
   Plus, 
   Play, 
-  CheckCircle, 
   Target, 
   Sparkles,
   BarChart3,
-  Trophy,
   Brain,
   ChevronRight,
   ChevronDown,
@@ -25,6 +22,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import KnowledgeMap from '../components/KnowledgeMap';
 import QuizComponent from '../components/QuizComponent';
 import FlashCardComponent from '../components/FlashCardComponent';
+import { ProcessedCourse } from '../types/course';
 
 const DashboardPage: React.FC = () => {
   const { courses, currentCourse, selectCourse } = useCourse();
@@ -233,7 +231,7 @@ const DashboardPage: React.FC = () => {
                       Knowledge Mastery
                     </h4>
                     <div className="space-y-3">
-                      {course.modules.slice(0, 2).map((module, index) => {
+                      {course.modules.slice(0, 2).map((module) => {
                         // Calculate module mastery
                         const flashcards = module.flashCards;
                         const mastered = flashcards.filter(c => c.masteryLevel >= 70).length;
@@ -392,6 +390,7 @@ const DashboardPage: React.FC = () => {
     );
   };
   
+  /*
   const renderAchievements = () => {
     const unlockedAchievements = stats.achievements.filter(a => a.unlockedAt);
     
@@ -445,6 +444,7 @@ const DashboardPage: React.FC = () => {
       </div>
     );
   };
+  */
   
   const renderProgressSummary = () => {
     const weeklyProgress = stats.studySessions

@@ -5,13 +5,12 @@ import {
   AlertTriangle, 
   Loader2, 
   CheckCircle, 
-  Wifi, 
   WifiOff,
   RefreshCw,
   Database,
   Cloud
 } from 'lucide-react';
-import { useCourse } from '../context/CourseContext';
+// import { useCourse } from '../context/CourseContext';
 
 interface ServerStatus {
   status: 'ok' | 'warning' | 'error' | 'loading';
@@ -28,7 +27,7 @@ interface ServerStatus {
 }
 
 const ServerStatus: React.FC = () => {
-  const { currentCourse } = useCourse();
+  // const { currentCourse } = useCourse();
   const [serverStatus, setServerStatus] = useState<ServerStatus | null>(null);
   const [isChecking, setIsChecking] = useState(false);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
